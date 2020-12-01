@@ -15,7 +15,7 @@ export const slice = createSlice({
 			"https://eiscprograparainternet.000webhostapp.com/editarCita.php",
 		allCitasAdmin:
 			"https://eiscprograparainternet.000webhostapp.com/verCitasAdmin.php",
-		authAdmin: "http://eiscprograparainternet.000webhostapp.com/auth.php",
+		authAdmin: "https://eiscprograparainternet.000webhostapp.com/auth.php",
 		altaNotificacion:
 			"https://eiscprograparainternet.000webhostapp.com/AltasNotificacion.php",
 
