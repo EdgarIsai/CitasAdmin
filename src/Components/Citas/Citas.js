@@ -24,6 +24,31 @@ const Citas = () => {
 			})
 			.catch((e) => {});
 	}, []);
+	const borrarCita = (mes, dia, hora, codigo) => {
+		axios
+			.get(
+				requests.borrarCita +
+					`?mes=${mes}&dia=${dia}&hora=${hora}&codigo=${codigo}`
+			)
+			.then(() => {
+				axios
+					.get(
+						requests.altaNotificacion +
+							`?codigo=${codigo}&mensaje=${`Tu cita del dia ${dia}, mes ${mes} hora ${hora} sido dada de baja`}`
+					)
+					.then((response) => {
+						console.log("si jalo");
+					});
+				axios
+					.get(requests.allCitasAdmin + `?carrera=${user.carrera}`)
+					.then((response) => {
+						let res = response.data;
+						dispatch(setResponse(res));
+						return res;
+					})
+					.catch((e) => {});
+			});
+	};
 	const dispatch = useDispatch();
 	const requests = useSelector(selectRequests);
 	const user = useSelector(selectUser);
@@ -88,15 +113,48 @@ const Citas = () => {
 		}
 	}
 
+	if (filter.filter === "diaSemana" && requests.response) {
+		for (let i = 0; i < citasCopy.length; i++) {
+			let temp = "";
+			let citaTemp = "";
+			citasCopy.map((cita, index) => {
+				if (temp !== "") {
+					if (days[cita.DiaSemana.toLowerCase()] < temp) {
+						citaTemp = cita;
+						citasCopy[index] = citasCopy[index - 1];
+						citasCopy[index - 1] = citaTemp;
+					}
+				}
+				temp = days[cita.DiaSemana.toLowerCase()];
+			});
+		}
+
+		for (let i = 0; i < citasCopy.length; i++) {
+			let temp = "";
+			let citaTemp = "";
+			citasCopy.map((cita, index) => {
+				if (temp !== "") {
+					if (months[cita.Mes.toLowerCase()] < temp) {
+						citaTemp = cita;
+						citasCopy[index] = citasCopy[index - 1];
+						citasCopy[index - 1] = citaTemp;
+					}
+				}
+				temp = months[cita.Mes.toLowerCase()];
+			});
+		}
+	}
+
 	return (
 		<div>
 			{user.auth ? null : <Redirect to="/" />}
 			<h2>filter</h2>
 			<select onChange={(e) => dispatch(setFilter(e.target.value))}>
 				<option value="dia">dia</option>
+				<option value="pick">pick</option>
 				<option value="diaSemana">diaSemana</option>
 			</select>
-			{filter.filter === "diaSemana" ? (
+			{filter.filter === "pick" ? (
 				<>
 					<p>dia: </p>
 					<input
@@ -118,6 +176,18 @@ const Citas = () => {
 									className={classes.citaContainer}
 									key={index}
 								>
+									<button
+										onClick={() =>
+											borrarCita(
+												cita.Mes,
+												cita.Dia,
+												cita.Hora,
+												cita.Codigo
+											)
+										}
+									>
+										Borrar
+									</button>
 									<p>Codigo: {cita.Codigo}</p>
 									<p>Mes: {cita.Mes}</p>
 									<p>Dia: {cita.Dia}</p>
@@ -125,7 +195,8 @@ const Citas = () => {
 									<p>Hora: {cita.Hora}</p>
 								</div>
 							);
-						} else {
+						}
+						if (filter.filter === "pick") {
 							if (
 								cita.Dia == filter.dia &&
 								cita.Mes.toLowerCase() ==
@@ -144,6 +215,21 @@ const Citas = () => {
 									</div>
 								);
 							}
+						}
+						if (filter.filter === "diaSemana") {
+							return (
+								<div
+									className={classes.citaContainer}
+									key={index}
+								>
+									<button>Borrar</button>
+									<p>Codigo: {cita.Codigo}</p>
+									<p>Mes: {cita.Mes}</p>
+									<p>Dia: {cita.Dia}</p>
+									<p>DiaSemana: {cita.DiaSemana}</p>
+									<p>Hora: {cita.Hora}</p>
+								</div>
+							);
 						}
 				  })
 				: null}
